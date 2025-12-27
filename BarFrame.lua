@@ -22,7 +22,19 @@ function addon.Bars:CreateBar(barID)
     
     -- Set initial size
     bar:SetSize(400, 40)
-    bar:SetPoint("CENTER", UIParent, "CENTER", 0, -100 * barID)
+    
+    -- Restore saved position or use default
+    if barData.position then
+        bar:SetPoint(
+            barData.position.point or "CENTER",
+            UIParent,
+            barData.position.relativePoint or "CENTER",
+            barData.position.x or 0,
+            barData.position.y or 0
+        )
+    else
+        bar:SetPoint("CENTER", UIParent, "CENTER", 0, -100 * barID)
+    end
     
     -- Background
     bar.bg = bar:CreateTexture(nil, "BACKGROUND")
@@ -44,8 +56,8 @@ function addon.Bars:CreateBar(barID)
     end)
     
     -- Title text
-    bar.title = bar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    bar.title:SetPoint("TOP", bar, "TOP", 0, 15)
+    bar.title = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    bar.title:SetPoint("TOPLEFT", bar, "TOPLEFT", 4, -2)
     bar.title:SetText(barData.name or ("Bar " .. barID))
     
     activeBars[barID] = bar
@@ -96,7 +108,7 @@ function addon.Bars:UpdateBar(barID)
         local yOffset = -row * (buttonSize + spacing)
         
         button:ClearAllPoints()
-        button:SetPoint("TOPLEFT", bar, "TOPLEFT", xOffset, yOffset - 20)
+        button:SetPoint("TOPLEFT", bar, "TOPLEFT", xOffset, yOffset)
         
         -- Set item
         self:SetButtonItem(button, itemData)
@@ -112,7 +124,7 @@ function addon.Bars:UpdateBar(barID)
     local rows = math.ceil(numButtons / buttonsPerRow)
     local cols = math.min(numButtons, buttonsPerRow)
     local width = cols * (buttonSize + spacing) - spacing
-    local height = rows * (buttonSize + spacing) - spacing + 20
+    local height = rows * (buttonSize + spacing) - spacing
     bar:SetSize(math.max(width, 100), math.max(height, 40))
     
     -- Apply display rules

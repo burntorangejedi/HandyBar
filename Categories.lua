@@ -225,51 +225,60 @@ function addon.Categories:ItemMatchesCategory(itemID, category)
         end
     end
     
-    -- Check filters
-    if category.filters then
-        local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, 
-              itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID = 
-              GetItemInfo(itemID)
-        
-        if not itemName then
-            return false
-        end
-        
-        -- Check item type
-        if category.filters.itemType and classID ~= category.filters.itemType then
-            return false
-        end
-        
-        -- Check item subtype
-        if category.filters.itemSubType and subclassID ~= category.filters.itemSubType then
-            return false
-        end
-        
-        -- Check keywords
-        if category.filters.keywords then
-            local found = false
-            for _, keyword in ipairs(category.filters.keywords) do
-                if itemName:find(keyword) then
-                    found = true
-                    break
-                end
-            end
-            if not found then
-                return false
-            end
-        end
-        
-        -- Check if toy
-        if category.filters.isToy then
-            if not C_ToyBox.GetToyInfo(itemID) then
-                return false
-            end
-        end
-        
-        return true
+    -- Check filters - if no filters defined, don't match anything automatically
+    if not category.filters then
+        return false
     end
     
-    return false
+    -- If filters exist but are empty, don't match
+    local hasAnyFilter = category.filters.itemType or category.filters.itemSubType or 
+                         category.filters.keywords or category.filters.isToy
+    if not hasAnyFilter then
+        return false
+    end
+    
+    local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, 
+          itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID = 
+          GetItemInfo(itemID)
+    
+    if not itemName then
+        return false
+    end
+    
+    -- ALL specified filters must match (AND logic, not OR)
+    
+    -- Check item type
+    if category.filters.itemType and classID ~= category.filters.itemType then
+        return false
+    end
+    
+    -- Check item subtype
+    if category.filters.itemSubType and subclassID ~= category.filters.itemSubType then
+        return false
+    end
+    
+    -- Check keywords (at least one must match if keywords are specified)
+    if category.filters.keywords then
+        local found = false
+        for _, keyword in ipairs(category.filters.keywords) do
+            if itemName:find(keyword) then
+                found = true
+                break
+            end
+        end
+        if not found then
+            return false
+        end
+    end
+    
+    -- Check if toy
+    if category.filters.isToy then
+        if not C_ToyBox.GetToyInfo(itemID) then
+            return false
+        end
+    end
+    
+    return true
 end
 
 function addon.Categories:GetPredefinedKeys()

@@ -36,7 +36,7 @@ A World of Warcraft addon that creates multiple customizable toolbars with categ
 
 ### Slash Commands
 
-- `/handybar` or `/hb` - Open options panel
+- `/handybar`, `/handy`, or `/hbar` - Open options panel
 - `/handybar reset` - Reset to defaults
 - `/handybar import|export` - Import/Export configuration
 - `/handybar refresh` - Refresh all bars

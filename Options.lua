@@ -9,18 +9,27 @@ function addon.Options:Initialize()
 end
 
 function addon.Options:CreateOptionsPanel()
-    -- Main options panel
-    optionsPanel = CreateFrame("Frame", "HandyBarOptionsPanel", UIParent)
-    optionsPanel.name = "HandyBar"
-    
-    -- Title
-    local title = optionsPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText("HandyBar Options")
+    -- Main options panel as a standalone window
+    optionsPanel = CreateFrame("Frame", "HandyBarOptionsPanel", UIParent, "BasicFrameTemplateWithInset")
+    optionsPanel:SetSize(500, 600)
+    optionsPanel:SetPoint("CENTER")
+    optionsPanel:Hide()
+    optionsPanel:SetFrameStrata("DIALOG")
+    optionsPanel:SetMovable(true)
+    optionsPanel:SetClampedToScreen(true)
+    optionsPanel:RegisterForDrag("LeftButton")
+    optionsPanel:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    optionsPanel:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+    optionsPanel.TitleText:SetText("HandyBar Options")
     
     -- Subtitle
     local subtitle = optionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+    subtitle:SetPoint("TOPLEFT", optionsPanel, "TOPLEFT", 20, -30)
+    subtitle:SetText("Configure your toolbars and categories")
+    
+    -- Subtitle
+    local subtitle = optionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("TOPLEFT", optionsPanel, "TOPLEFT", 20, -30)
     subtitle:SetText("Configure your toolbars and categories")
     
     -- Number of bars slider
@@ -68,6 +77,7 @@ function addon.Options:CreateOptionsPanel()
     barDropdown:SetPoint("TOPLEFT", barConfigTitle, "BOTTOMLEFT", -15, -5)
     UIDropDownMenu_SetWidth(barDropdown, 150)
     UIDropDownMenu_SetText(barDropdown, "Select Bar...")
+    barDropdown.selectedValue = nil
     
     -- Configure selected bar button
     local configureBarBtn = CreateFrame("Button", nil, optionsPanel, "UIPanelButtonTemplate")
@@ -75,21 +85,26 @@ function addon.Options:CreateOptionsPanel()
     configureBarBtn:SetSize(120, 25)
     configureBarBtn:SetText("Configure Bar")
     configureBarBtn:SetScript("OnClick", function()
-        local selectedBar = UIDropDownMenu_GetSelectedValue(barDropdown)
+        local selectedBar = barDropdown.selectedValue
         if selectedBar then
             self:ShowBarConfigDialog(selectedBar)
+        else
+            print("|cffff0000HandyBar:|r Please select a bar first.")
         end
     end)
     
     -- Initialize dropdown
     UIDropDownMenu_Initialize(barDropdown, function(self, level)
         for i = 1, addon.db.numBars do
+            addon.DB:EnsureBarExists(i)
             local info = UIDropDownMenu_CreateInfo()
-            info.text = addon.db.bars[i].name or ("Bar " .. i)
+            info.text = addon.db.bars[i] and (addon.db.bars[i].name or ("Bar " .. i)) or ("Bar " .. i)
             info.value = i
-            info.func = function(self)
-                UIDropDownMenu_SetSelectedValue(barDropdown, self.value)
-                UIDropDownMenu_SetText(barDropdown, self.text)
+            info.checked = (barDropdown.selectedValue == i)
+            info.func = function(btn)
+                barDropdown.selectedValue = btn.value
+                UIDropDownMenu_SetText(barDropdown, btn:GetText())
+                CloseDropDownMenus()
             end
             UIDropDownMenu_AddButton(info)
         end
@@ -116,14 +131,6 @@ function addon.Options:CreateOptionsPanel()
         self:ShowManageCategoriesDialog()
     end)
     
-    -- Register with Blizzard options
-    if Settings and Settings.RegisterCanvasLayoutCategory then
-        local category = Settings.RegisterCanvasLayoutCategory(optionsPanel, "HandyBar")
-        Settings.RegisterAddOnCategory(category)
-    else
-        InterfaceOptions_AddCategory(optionsPanel)
-    end
-    
     -- Create confirmation dialog
     StaticPopupDialogs["HANDYBAR_RESET_CONFIRM"] = {
         text = "Are you sure you want to reset HandyBar to default settings? This cannot be undone.",
@@ -145,19 +152,27 @@ function addon.Options:ShowBarConfigDialog(barID)
         return
     end
     
+    -- Hide existing dialog if any
+    if _G["HandyBarConfigDialog"] then
+        _G["HandyBarConfigDialog"]:Hide()
+        _G["HandyBarConfigDialog"] = nil
+    end
+    
     -- Create dialog frame
     local dialog = CreateFrame("Frame", "HandyBarConfigDialog", UIParent, "BasicFrameTemplateWithInset")
     dialog:SetSize(400, 500)
     dialog:SetPoint("CENTER")
-    dialog:SetFrameStrata("DIALOG")
+    dialog:SetFrameStrata("FULLSCREEN_DIALOG")
+    dialog:SetFrameLevel(100)
     dialog:EnableMouse(true)
     dialog.TitleText:SetText("Configure " .. (barData.name or ("Bar " .. barID)))
     
     -- Make draggable
     dialog:SetMovable(true)
+    dialog:SetClampedToScreen(true)
     dialog:RegisterForDrag("LeftButton")
-    dialog.TitleBg:SetScript("OnDragStart", function() dialog:StartMoving() end)
-    dialog.TitleBg:SetScript("OnDragStop", function() dialog:StopMovingOrSizing() end)
+    dialog:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    dialog:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
     
     local yOffset = -30
     
@@ -294,10 +309,7 @@ function addon.Options:ShowManageCategoriesDialog()
 end
 
 function addon.Options:Open()
-    if Settings and Settings.OpenToCategory then
-        Settings.OpenToCategory("HandyBar")
-    else
-        InterfaceOptionsFrame_OpenToCategory(optionsPanel)
-        InterfaceOptionsFrame_OpenToCategory(optionsPanel) -- Called twice due to Blizzard bug
+    if optionsPanel then
+        optionsPanel:Show()
     end
 end

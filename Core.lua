@@ -43,7 +43,8 @@ end)
 
 -- Slash commands
 SLASH_HANDYBAR1 = "/handybar"
-SLASH_HANDYBAR2 = "/hb"
+SLASH_HANDYBAR2 = "/handy"
+SLASH_HANDYBAR3 = "/hbar"
 
 SlashCmdList["HANDYBAR"] = function(msg)
     local command, args = msg:match("^(%S*)%s*(.-)$")
@@ -126,6 +127,7 @@ SlashCmdList["HANDYBAR"] = function(msg)
         
     elseif command == "help" then
         print("|cff00ff00HandyBar Commands:|r")
+        print("  Aliases: /handybar, /handy, /hbar")
         print("  /handybar - Open options")
         print("  /handybar reset - Reset to defaults")
         print("  /handybar import|export - Import/Export configuration")

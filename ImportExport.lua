@@ -20,9 +20,10 @@ function addon.ImportExport:ShowDialog()
     
     -- Make draggable
     importExportFrame:SetMovable(true)
+    importExportFrame:SetClampedToScreen(true)
     importExportFrame:RegisterForDrag("LeftButton")
-    importExportFrame.TitleBg:SetScript("OnDragStart", function() importExportFrame:StartMoving() end)
-    importExportFrame.TitleBg:SetScript("OnDragStop", function() importExportFrame:StopMovingOrSizing() end)
+    importExportFrame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    importExportFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
     
     -- Instructions
     local instructions = importExportFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
