@@ -40,7 +40,7 @@ function addon.Bars:CreateBar(barID)
     end)
     bar:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        self:SavePosition()
+        addon.Bars:SavePosition(self)
     end)
     
     -- Title text
@@ -150,17 +150,41 @@ function addon.Bars:GetOrCreateButton(bar, index)
         return bar.buttons[index]
     end
     
-    local button = CreateFrame("Button", "HandyBar_Bar" .. bar.barID .. "_Button" .. index, bar, "SecureActionButtonTemplate, ItemButtonTemplate")
+    local button = CreateFrame("Button", "HandyBar_Bar" .. bar.barID .. "_Button" .. index, bar, "SecureActionButtonTemplate")
     button:RegisterForClicks("AnyUp")
     button.barID = bar.barID
     button.index = index
+    button:SetSize(36, 36)
     
     -- Secure attributes for item usage
     button:SetAttribute("type1", "item")
     
+    -- Create icon texture
+    button.icon = button:CreateTexture(nil, "BACKGROUND")
+    button.icon:SetAllPoints()
+    button.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    
+    -- Border
+    button.border = button:CreateTexture(nil, "OVERLAY")
+    button.border:SetAllPoints()
+    button.border:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+    button.border:SetBlendMode("ADD")
+    button.border:Hide()
+    
+    -- Normal texture
+    button:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
+    button:GetNormalTexture():SetTexCoord(0, 0, 0, 0)
+    
+    -- Pushed texture
+    button:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
+    
+    -- Highlight texture
+    button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    
     -- Cooldown
     button.cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
     button.cooldown:SetAllPoints()
+    button.cooldown:SetDrawEdge(false)
     
     -- Count
     button.count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
