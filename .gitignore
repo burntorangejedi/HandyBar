@@ -1,0 +1,26 @@
+# WoW Addon Development
+
+# Saved Variables (user data)
+*.lua.bak
+WTF/
+
+# Build/Package files
+*.zip
+release/
+build/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

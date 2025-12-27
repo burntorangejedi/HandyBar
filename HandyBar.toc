@@ -1,0 +1,18 @@
+## Interface: 110002
+## Title: HandyBar
+## Notes: Create multiple customizable toolbars with category-based item management
+## Author: YourName
+## Version: 1.0.0
+## SavedVariables: HandyBarDB
+## IconTexture: Interface\Icons\INV_Misc_Bag_08
+
+# Core files
+Core.lua
+Database.lua
+Categories.lua
+
+# UI files
+BarFrame.lua
+EditMode.lua
+Options.lua
+ImportExport.lua
